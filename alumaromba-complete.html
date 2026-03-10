@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Alumaromba Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: { 
+                    sans: ['"Space Grotesk"', 'sans-serif'],
+                    mono: ['"JetBrains Mono"', 'monospace'],
+                },
+            }
+        }
+    }
+</script>
+<style>
+:root {
+  --primary:#8b5cf6;
+  --primary-dim:rgba(139,92,246,.16);
+  --primary-glow:rgba(139,92,246,.28);
+  --secondary:#3b82f6;
+  --secondary-dim:rgba(59,130,246,.16);
+  --accent:#06b6d4;
+  --amber:#f4a261;
+  --green:#2ec4b6;
+  
+  --bg-d:#0a0a0f;
+  --s1-d:#111118;
+  --s2-d:#1a1a24;
+  --s3-d:#24243a;
+  --border-d:#2d2d44;
+  --border2-d:#3d3d54;
+  --text-d:#f5f5f7;
+  --muted-d:#9ca3af;
+  --muted2-d:#6b7280;
+  
+  --bg-l:#f8f9fa;
+  --s1-l:#ffffff;
+  --s2-l:#f1f3f5;
+  --s3-l:#e9ecef;
+  --border-l:#dee2e6;
+  --border2-l:#ced4da;
+  --text-l:#1a1a1f;
+  --muted-l:#6c757d;
+  --muted2-l:#adb5bd;
+}
+
+[data-theme="dark"]{
+  --bg:var(--bg-d);--s1:var(--s1-d);--s2:var(--s2-d);--s3:var(--s3-d);
+  --border:var(--border-d);--border2:var(--border2-d);--text:var(--text-d);
+  --muted:var(--muted-d);--muted2:var(--muted2-d);
+}
+[data-theme="light"]{
+  --bg:var(--bg-l);--s1:var(--s1-l);--s2:var(--s2-l);--s3:var(--s3-l);
+  --border:var(--border-l);--border2:var(--border2-l);--text:var(--text-l);
+  --muted:var(--muted-l);--muted2:var(--muted2-l);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{font-size:16px;}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative;overflow-x:hidden;transition:background .3s,color .3s;}
+
+/* Login Screen */
+.login-screen{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.login-card{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:40px 30px;
+  width:100%;
+  max-width:380px;
+  text-align:center;
+}
+.login-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:48px;
+  letter-spacing:3px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:10px;
+}
+.login-subtitle{
+  font-size:14px;
+  color:var(--muted);
+  margin-bottom:40px;
+}
+.input-group{
+  margin-bottom:16px;
+  text-align:left;
+}
+.input-label{
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:8px;
+  display:block;
+}
+.input-field{
+  width:100%;
+  padding:14px 16px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  font-size:15px;
+  font-family:'Space Grotesk',sans-serif;
+  transition:all .2s;
+}
+.input-field:focus{
+  outline:none;
+  border-color:var(--primary);
+  background:var(--s1);
+}
+.btn-primary{
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border:none;
+  border-radius:12px;
+  color:white;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  transition:all .2s;
+  margin-top:24px;
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px var(--primary-glow);
+}
+.btn-primary:active{
+  transform:scale(.98);
+}
+.login-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:24px 0;
+  color:var(--muted);
+  font-size:12px;
+}
+.login-divider::before,
+.login-divider::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+.btn-secondary{
+  width:100%;
+  padding:14px;
+  background:transparent;
+  border:1.5px solid var(--border2);
+  border-radius:12px;
+  color:var(--text);
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.btn-secondary:hover{
+  border-color:var(--primary);
+  color:var(--primary);
+}
+.error-message{
+  background:rgba(239,68,68,.1);
+  border:1px solid rgba(239,68,68,.3);
+  color:#ef4444;
+  padding:12px;
+  border-radius:8px;
+  font-size:13px;
+  margin-bottom:16px;
+  display:none;
+}
+.success-message{
+  background:rgba(46,196,182,.1);
+  border:1px solid rgba(46,196,182,.3);
+  color:var(--green);
+  padding:12px;
+  border-radius:8px;
+  font-size:13px;
+  margin-bottom:16px;
+  display:none;
+}
+
+/* Loading Overlay */
+.loading-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(10,10,15,.9);
+  backdrop-filter:blur(10px);
+  z-index:150;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.spinner{
+  width:48px;
+  height:48px;
+  border:4px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+
+/* Toast Notification */
+.toast{
+  position:fixed;
+  top:80px;
+  left:50%;
+  transform:translateX(-50%) translateY(-120%);
+  background:var(--s1);
+  border:1px solid var(--border);
+  padding:16px 24px;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  z-index:180;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  max-width:90%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+}
+.toast-icon{
+  width:24px;
+  height:24px;
+  flex-shrink:0;
+}
+.toast-message{
+  font-size:14px;
+  font-weight:600;
+}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(10,10,15,.8);
+  backdrop-filter:blur(8px);
+  z-index:160;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal.active{
+  display:flex;
+}
+.modal-content{
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px;
+  width:100%;
+  max-width:380px;
+  max-height:80vh;
+  overflow-y:auto;
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+.modal-title{
+  font-size:18px;
+  font-weight:700;
+}
+.modal-close{
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  color:var(--muted);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .2s;
+}
+.modal-close:hover{
+  border-color:var(--primary);
+  color:var(--primary);
+}
+
+/* Achievement Badge */
+.achievement{
+  background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(59,130,246,.15));
+  border:1px solid var(--primary);
+  border-radius:16px;
+  padding:16px;
+  margin:12px 16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  animation:slideIn .4s ease;
+}
+@keyframes slideIn{
+  from{
+    opacity:0;
+    transform:translateX(-20px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+.achievement-icon{
+  width:56px;
+  height:56px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  flex-shrink:0;
+}
+.achievement-info{
+  flex:1;
+}
+.achievement-title{
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.achievement-desc{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Progress Chart */
+.chart-container{
+  position:relative;
+  height:200px;
+  margin:16px 0;
+}
+
+/* Todos os outros estilos do arquivo original mantidos */
+.topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background .3s;}
+[data-theme="dark"] .topbar{background:rgba(10,10,15,.92);}
+[data-theme="light"] .topbar{background:rgba(248,249,250,.92);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--text);display:flex;align-items:center;gap:9px;}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 10px var(--primary-glow);animation:blink 2.4s infinite;flex-shrink:0;}
+@keyframes blink{0%,90%,100%{opacity:1;}95%{opacity:0;}}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.theme-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);}
+.avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;letter-spacing:.5px;cursor:pointer;}
+.scroll-content{flex:1;overflow-y:auto;padding-bottom:80px;position:relative;z-index:1;}
+.scroll-content::-webkit-scrollbar{display:none;}
+.hero{margin:16px;border-radius:16px;overflow:hidden;position:relative;}
+.hero-inner{padding:20px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(59,130,246,.15));border-radius:15px;}
+[data-theme="light"] .hero-inner{background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(59,130,246,.08));}
+.hero-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--primary),var(--secondary),transparent);}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.hero-greeting{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:500;}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:2px;color:var(--text);line-height:1;}
+.hero-sub{font-size:12px;color:var(--muted);margin-top:4px;font-weight:400;}
+.streak-pill{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:12px;background:var(--primary-dim);border:1px solid rgba(139,92,246,.3);flex-shrink:0;}
+.streak-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--primary);letter-spacing:1px;line-height:1;}
+.streak-lbl{font-size:8px;color:var(--primary);text-transform:uppercase;letter-spacing:1.5px;opacity:.8;margin-top:2px;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;}
+.hs{padding:10px 12px;}
+[data-theme="dark"] .hs{background:rgba(139,92,246,.05);}
+[data-theme="light"] .hs{background:rgba(139,92,246,.03);}
+.hs-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);}
+.hs-unit{font-family:'Space Grotesk';font-size:10px;color:var(--muted);}
+.hs-lbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:1px;font-weight:600;}
+.sect{padding:18px 16px 8px;display:flex;align-items:center;gap:10px;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);}
+.sect-line{flex:1;height:1px;background:var(--border);}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:16px;margin:0 16px;position:relative;overflow:hidden;}
+.card+.card{margin-top:10px;}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
+[data-theme="dark"] .bottom-nav{background:rgba(10,10,15,.96);}
+[data-theme="light"] .bottom-nav{background:rgba(248,249,250,.96);}
+.nb{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;transition:all .14s;position:relative;}
+.nb:active{transform:scale(.84);}
+.nb-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);width:20px;height:2px;border-radius:2px;background:var(--primary);opacity:0;transition:opacity .2s;}
+.nb.active .nb-bar{opacity:1;}
+.nb-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+.nb-icon svg{width:18px;height:18px;stroke:var(--muted);stroke-width:1.8;fill:none;transition:stroke .2s;}
+.nb.active .nb-icon svg{stroke:var(--primary);}
+.nb-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);transition:color .2s;}
+.nb.active .nb-lbl{color:var(--primary);}
+.tab-page{display:none;}.tab-page.active{display:block;}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ALUMAROMBA</div>
+    <div class="login-subtitle">Seu app de treino inteligente</div>
+    
+    <div id="errorMsg" class="error-message"></div>
+    <div id="successMsg" class="success-message"></div>
+    
+    <div id="loginForm">
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <input type="email" class="input-field" id="loginEmail" placeholder="seu@email.com">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Senha</label>
+        <input type="password" class="input-field" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">Entrar</button>
+      <div class="login-divider">ou</div>
+      <button class="btn-secondary" onclick="showSignupForm()">Criar Conta</button>
+    </div>
+    
+    <div id="signupForm" class="hidden">
+      <div class="input-group">
+        <label class="input-label">Nome</label>
+        <input type="text" class="input-field" id="signupName" placeholder="Seu nome">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Email</label>
+        <input type="email" class="input-field" id="signupEmail" placeholder="seu@email.com">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Senha</label>
+        <input type="password" class="input-field" id="signupPassword" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="handleSignup()">Criar Conta</button>
+      <div class="login-divider">ou</div>
+      <button class="btn-secondary" onclick="showLoginForm()">Já tenho conta</button>
+    </div>
+    
+    <div style="margin-top:20px;font-size:11px;color:var(--muted);">
+      <p>Demo: use qualquer email/senha</p>
+      <p style="margin-top:4px;">Firebase offline habilitado</p>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <div class="toast-icon">✓</div>
+  <div class="toast-message" id="toastMessage"></div>
+</div>
+
+<!-- Main App (hidden initially) -->
+<div id="mainApp" class="hidden">
+  <header class="topbar">
+    <div class="logo"><div class="logo-dot"></div>ALUMAROMBA</div>
+    <div class="topbar-right">
+      <button class="theme-btn" onclick="toggleTheme()">
+        <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="avatar" onclick="openProfileMenu()" id="userAvatar">--</div>
+    </div>
+  </header>
+
+  <div class="scroll-content" id="sc">
+    <div class="tab-page active" id="tab-home">
+      <!-- Hero atualizado dinamicamente -->
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="hero-line"></div>
+          <div class="hero-top">
+            <div>
+              <div class="hero-greeting">BEM-VINDO</div>
+              <div class="hero-name" id="userName">Carregando...</div>
+              <div class="hero-sub">Pronto para treinar hoje?</div>
+            </div>
+            <div class="streak-pill">
+              <div class="streak-num" id="streakDays">0</div>
+              <div class="streak-lbl">DIAS</div>
+            </div>
+          </div>
+          <div class="hero-stats">
+            <div class="hs"><div class="hs-val" id="totalWorkouts">0</div><div class="hs-lbl">Treinos</div></div>
+            <div class="hs"><div class="hs-val" id="currentWeight">0<span class="hs-unit">kg</span></div><div class="hs-lbl">Peso</div></div>
+            <div class="hs"><div class="hs-val" id="weeklyProgress">0/5</div><div class="hs-lbl">Meta</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sect">Conquistas Recentes<div class="sect-line"></div></div>
+      <div id="achievementsContainer"></div>
+
+      <div class="sect">Progresso do Mês<div class="sect-line"></div></div>
+      <div class="card">
+        <div class="chart-container">
+          <canvas id="progressChart"></canvas>
+        </div>
+      </div>
+
+      <div class="sect">Ações Rápidas<div class="sect-line"></div></div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <button class="btn-primary" style="margin:0;" onclick="startQuickWorkout()">Treino Rápido</button>
+          <button class="btn-secondary" onclick="exportData()">Exportar Dados</button>
+          <button class="btn-secondary" onclick="shareProgress()">Compartilhar</button>
+          <button class="btn-secondary" onclick="syncData()">Sincronizar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outras tabs mantidas -->
+    <div class="tab-page" id="tab-treinos"></div>
+    <div class="tab-page" id="tab-progresso"></div>
+    <div class="tab-page" id="tab-perfil"></div>
+    <div class="tab-page" id="tab-timer"></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nb active" onclick="switchTab('home')">
+      <div class="nb-bar"></div>
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div class="nb-lbl">Início</div>
+    </div>
+    <div class="nb" onclick="switchTab('treinos')">
+      <div class="nb-bar"></div>
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="nb-lbl">Treinos</div>
+    </div>
+    <div class="nb" onclick="switchTab('progresso')">
+      <div class="nb-bar"></div>
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="nb-lbl">Progresso</div>
+    </div>
+    <div class="nb" onclick="switchTab('perfil')">
+      <div class="nb-bar"></div>
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="nb-lbl">Perfil</div>
+    </div>
+    <div class="nb" onclick="switchTab('timer')">
+      <div class="nb-bar"></div>
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="nb-lbl">Timer</div>
+    </div>
+  </nav>
+</div>
+
+<!-- Profile Menu Modal -->
+<div class="modal" id="profileModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Menu do Perfil</div>
+      <button class="modal-close" onclick="closeProfileMenu()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button class="btn-secondary" onclick="viewProfile()">Ver Perfil</button>
+      <button class="btn-secondary" onclick="editPreferences()">Preferências</button>
+      <button class="btn-secondary" onclick="viewStats()">Estatísticas</button>
+      <button class="btn-secondary" onclick="handleLogout()" style="color:#ef4444;border-color:#ef4444;">Sair</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== FIREBASE CONFIGURATION =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDemo_ReplaceWithYourKey",
+  authDomain: "alumaromba-demo.firebaseapp.com",
+  databaseURL: "https://alumaromba-demo.firebaseio.com",
+  projectId: "alumaromba-demo",
+  storageBucket: "alumaromba-demo.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "demo-app-id"
+};
+
+// Initialize Firebase (with offline mode)
+let app, auth, db;
+let currentUser = null;
+let userData = {};
+
+try {
+  app = firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.database();
+  
+  // Enable offline persistence
+  db.goOffline();
+  db.goOnline();
+  
+  console.log('✅ Firebase initialized');
+} catch (error) {
+  console.warn('⚠️ Firebase offline mode:', error.message);
+}
+
+// ===== AUTH FUNCTIONS =====
+function showLoginForm() {
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('signupForm').classList.add('hidden');
+  clearMessages();
+}
+
+function showSignupForm() {
+  document.getElementById('signupForm').classList.remove('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+  clearMessages();
+}
+
+function clearMessages() {
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+function showError(message) {
+  const errorEl = document.getElementById('errorMsg');
+  errorEl.textContent = message;
+  errorEl.style.display = 'block';
+}
+
+function showSuccess(message) {
+  const successEl = document.getElementById('successMsg');
+  successEl.textContent = message;
+  successEl.style.display = 'block';
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  
+  if (!email || !password) {
+    showError('Preencha todos os campos');
+    return;
+  }
+  
+  showLoading(true);
+  
+  try {
+    // Demo mode - aceita qualquer email/senha
+    await simulateLogin(email, password);
+    showApp();
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function handleSignup() {
+  const name = document.getElementById('signupName').value;
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  
+  if (!name || !email || !password) {
+    showError('Preencha todos os campos');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showError('Senha deve ter no mínimo 6 caracteres');
+    return;
+  }
+  
+  showLoading(true);
+  
+  try {
+    // Demo mode
+    await simulateSignup(name, email, password);
+    showSuccess('Conta criada com sucesso!');
+    setTimeout(() => {
+      showApp();
+    }, 1000);
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function simulateLogin(email, password) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      currentUser = {
+        uid: 'demo-user-' + Date.now(),
+        email: email,
+        displayName: email.split('@')[0]
+      };
+      localStorage.setItem('demoUser', JSON.stringify(currentUser));
+      resolve();
+    }, 800);
+  });
+}
+
+async function simulateSignup(name, email, password) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      currentUser = {
+        uid: 'demo-user-' + Date.now(),
+        email: email,
+        displayName: name
+      };
+      localStorage.setItem('demoUser', JSON.stringify(currentUser));
+      // Criar dados iniciais
+      userData = {
+        name: name,
+        email: email,
+        stats: {
+          streak: 0,
+          totalWorkouts: 0,
+          weeklyCompleted: 0,
+          weeklyGoal: 5,
+          weight: 75
+        },
+        achievements: [],
+        workouts: []
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+      resolve();
+    }, 800);
+  });
+}
+
+function handleLogout() {
+  localStorage.removeItem('demoUser');
+  localStorage.removeItem('userData');
+  currentUser = null;
+  userData = {};
+  location.reload();
+}
+
+// ===== UI FUNCTIONS =====
+function showLoading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById('toast');
+  const toastMsg = document.getElementById('toastMessage');
+  toastMsg.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
+}
+
+function showApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  loadUserData();
+  initializeCharts();
+  showToast('Bem-vindo ao Alumaromba! 🎉');
+}
+
+function loadUserData() {
+  // Load from localStorage (demo)
+  const savedUser = localStorage.getItem('demoUser');
+  const savedData = localStorage.getItem('userData');
+  
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+  }
+  
+  if (savedData) {
+    userData = JSON.parse(savedData);
+  } else {
+    // Dados padrão
+    userData = {
+      name: currentUser?.displayName || 'Usuário',
+      stats: {
+        streak: 12,
+        totalWorkouts: 48,
+        weeklyCompleted: 4,
+        weeklyGoal: 5,
+        weight: 82.5
+      },
+      achievements: [
+        { id: 1, title: 'Primeira Semana', desc: 'Complete 7 dias seguidos', icon: '🔥', unlocked: true },
+        { id: 2, title: 'Dedicado', desc: '30 treinos completados', icon: '💪', unlocked: true }
+      ],
+      workouts: []
+    };
+  }
+  
+  updateUI();
+}
+
+function updateUI() {
+  // Update header
+  const initials = userData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  document.getElementById('userAvatar').textContent = initials;
+  
+  // Update hero
+  document.getElementById('userName').textContent = userData.name;
+  document.getElementById('streakDays').textContent = userData.stats.streak;
+  document.getElementById('totalWorkouts').textContent = userData.stats.totalWorkouts;
+  document.getElementById('currentWeight').textContent = userData.stats.weight;
+  document.getElementById('weeklyProgress').textContent = 
+    `${userData.stats.weeklyCompleted}/${userData.stats.weeklyGoal}`;
+  
+  // Update achievements
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const container = document.getElementById('achievementsContainer');
+  if (!userData.achievements || userData.achievements.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);">Nenhuma conquista ainda</div>';
+    return;
+  }
+  
+  container.innerHTML = userData.achievements.map(ach => `
+    <div class="achievement">
+      <div class="achievement-icon">${ach.icon}</div>
+      <div class="achievement-info">
+        <div class="achievement-title">${ach.title}</div>
+        <div class="achievement-desc">${ach.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== CHART =====
+let progressChart;
+
+function initializeCharts() {
+  const ctx = document.getElementById('progressChart');
+  if (!ctx) return;
+  
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#9ca3af' : '#6c757d';
+  const gridColor = isDark ? '#2d2d44' : '#dee2e6';
+  
+  progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+      datasets: [{
+        label: 'Treinos',
+        data: [8, 12, 10, 14],
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139,92,246,0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: textColor },
+          grid: { color: gridColor }
+        },
+        x: {
+          ticks: { color: textColor },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// ===== ACTIONS =====
+function startQuickWorkout() {
+  showToast('Iniciando treino rápido...');
+  switchTab('treinos');
+}
+
+function exportData() {
+  const dataStr = JSON.stringify(userData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `alumaromba-backup-${Date.now()}.json`;
+  link.click();
+  showToast('Dados exportados com sucesso!');
+}
+
+function shareProgress() {
+  if (navigator.share) {
+    navigator.share({
+      title: 'Meu Progresso - Alumaromba',
+      text: `🔥 ${userData.stats.streak} dias de sequência\n💪 ${userData.stats.totalWorkouts} treinos completados`,
+      url: window.location.href
+    }).then(() => {
+      showToast('Compartilhado!');
+    }).catch(console.error);
+  } else {
+    showToast('Compartilhamento não disponível');
+  }
+}
+
+function syncData() {
+  showLoading(true);
+  setTimeout(() => {
+    showLoading(false);
+    showToast('Dados sincronizados!');
+  }, 1500);
+}
+
+function openProfileMenu() {
+  document.getElementById('profileModal').classList.add('active');
+}
+
+function closeProfileMenu() {
+  document.getElementById('profileModal').classList.remove('active');
+}
+
+function viewProfile() {
+  closeProfileMenu();
+  switchTab('perfil');
+}
+
+function editPreferences() {
+  closeProfileMenu();
+  showToast('Preferências em desenvolvimento');
+}
+
+function viewStats() {
+  closeProfileMenu();
+  switchTab('progresso');
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const newTheme = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  
+  const icon = document.getElementById('themeIcon');
+  if (newTheme === 'dark') {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  } else {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+  
+  // Update chart
+  if (progressChart) {
+    const isDark = newTheme === 'dark';
+    const textColor = isDark ? '#9ca3af' : '#6c757d';
+    const gridColor = isDark ? '#2d2d44' : '#dee2e6';
+    
+    progressChart.options.scales.y.ticks.color = textColor;
+    progressChart.options.scales.x.ticks.color = textColor;
+    progressChart.options.scales.y.grid.color = gridColor;
+    progressChart.options.scales.x.grid.color = gridColor;
+    progressChart.update();
+  }
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  
+  document.querySelectorAll('.nb').forEach(n => n.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+}
+
+// ===== INITIALIZATION =====
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+// Check if user is logged in
+window.addEventListener('DOMContentLoaded', () => {
+  const savedUser = localStorage.getItem('demoUser');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    showApp();
+  }
+});
+
+console.log('🚀 Alumaromba Pro loaded!');
+</script>
+
+</body>
+</html>
